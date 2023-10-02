@@ -5,6 +5,7 @@ import exceptions.InvalidState
 import models.MinimalRangeQuery
 import models.Point
 import models.Rectangle
+import models.ReinsertEntry
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.abs
@@ -27,14 +28,14 @@ class SpatialCell(
         bounds.max.y -= 0.001
     }
 
-    fun addQuery(keyword: String, query: MinimalRangeQuery, swap: Boolean = false): Boolean {
+    fun addQuery(keyword: String, query: MinimalRangeQuery, swap: Boolean = false): Set<ReinsertEntry> {
         if (!::_textualIndex.isInitialized) {
             _textualIndex = ConcurrentHashMap()
         }
 
         val queue: Queue<MinimalRangeQuery> = LinkedList()
-
-        if (insertAtKeyword(keyword, query)) return true else queue.add(query)
+        val nextLevelQueries: MutableSet<ReinsertEntry> = mutableSetOf()
+        if (insertAtKeyword(keyword, query)) return nextLevelQueries else queue.add(query)
 
         while (queue.isNotEmpty()) {
             val nextQuery = queue.remove()
@@ -98,9 +99,9 @@ class SpatialCell(
                         node.queries.add(nextQuery)
                     }
                     inserted = true
-//                    if (node.queries.size > FAST.DegradationRatio) { //TODO: Pushing queries to next level
-//                        findQueriesToReinsert(cell as KeywordTrieCell?, insertNextLevelQueries)
-//                    }
+                    if (node.queries.size > context.degredationRatio) {
+                        nextLevelQueries.addAll(findQueriesToReinsert(node))
+                    }
                 }
             }
 
@@ -109,7 +110,7 @@ class SpatialCell(
             }
         }
 
-        return false
+        return nextLevelQueries
     }
 
     private fun insertAtKeyword(keyword: String, query: MinimalRangeQuery): Boolean {
@@ -146,6 +147,15 @@ class SpatialCell(
             node.queries.add(query)
             context.numberOfInsertedTextualNodes++
         }
+    }
+
+    private fun findQueriesToReinsert(node: QueryTrieNode): List<ReinsertEntry> {
+        val compartor = SpatialOverlapCompartor(bounds)
+        node.queries.sortWith(compartor)
+        val nextLevelQueries = node.queries.takeLast(node.queries.size/2)
+        node.queries.removeAll(nextLevelQueries)
+        println("Next level queries: $nextLevelQueries")
+        return nextLevelQueries.map { ReinsertEntry(bounds.intersection(it.spatialRange), it) }
     }
 
     private fun removeQuery(query: MinimalRangeQuery) {
@@ -231,3 +241,12 @@ class SpatialCell(
     }
 
 }
+
+internal class SpatialOverlapCompartor(private var bounds: Rectangle) : Comparator<MinimalRangeQuery> {
+    override fun compare(e1: MinimalRangeQuery, e2: MinimalRangeQuery): Int {
+        val val1 = bounds.intersection(e1.spatialRange).area
+        val val2 = bounds.intersection(e2.spatialRange).area
+        return if (val1 < val2)  1 else if (val1 == val2) 0 else -1
+    }
+}
+

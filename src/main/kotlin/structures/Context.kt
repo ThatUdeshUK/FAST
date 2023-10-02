@@ -20,7 +20,8 @@ class Context(val bounds: Rectangle, val gridGran: Int, val maxLevel: Int) {
     var queryTimeStampCounter: Int = 0
     var objectTimeStampCounter: Int = 0
 
-    var trieSplitThreshold: Int = SpatioTextualConst.TRIE_SPLIT_THRESHOLD
+    val trieSplitThreshold: Int = SpatioTextualConst.TRIE_SPLIT_THRESHOLD
+    val degredationRatio: Int = SpatioTextualConst.DEGREDATION_RATIO
 
     val keywordFrequencyMap: HashMap<String, KeywordFrequency> = HashMap()
 }

@@ -1,6 +1,7 @@
 import constants.SpatioTextualConst
 import models.MinimalRangeQuery
 import models.Rectangle
+import models.ReinsertEntry
 import structures.*
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.pow
@@ -17,15 +18,15 @@ class FAST(bounds: Rectangle, gridGran: Int, maxLevel: Int) {
 
         var level = context.maxLevel
 
-        var currentLevelQueries: ArrayList<MinimalRangeQuery> = ArrayList()
-        currentLevelQueries.add(query)
+        var currentLevelQueries: ArrayList<ReinsertEntry> = ArrayList()
+        currentLevelQueries.add(ReinsertEntry(query))
 
         while (level >= 0 && currentLevelQueries.size > 0) {
-//            val nextLevelQueries: ArrayList<MinimalRangeQuery> = ArrayList()
+            val nextLevelQueries: ArrayList<ReinsertEntry> = ArrayList()
             val levelGran = (context.gridGran / 2.0.pow(level)).toInt() // calculate the gran_i (eq. 1)
             val levelStep = SpatioTextualConst.MAX_RANGE_X / levelGran // calculate the side_len_i (alt to eq. 2)
             currentLevelQueries.forEach { entry ->
-                val (minX, minY, maxX, maxY) = entry.spatialRange.mapToCell(levelStep) // Map bounds to spatial cell
+                val (minX, minY, maxX, maxY) = entry.range.mapToCell(levelStep) // Map bounds to spatial cell
 //                val span = max(maxX - minX, maxY - minX)
 
 //                if (minInsertedLevel == -1) {
@@ -37,7 +38,7 @@ class FAST(bounds: Rectangle, gridGran: Int, maxLevel: Int) {
                 var minKeyword: String? = null
                 var minCount: Int = Int.MAX_VALUE
 
-                entry.keywords.forEach { keyword ->
+                entry.query.keywords.forEach { keyword ->
                     var stats = context.keywordFrequencyMap[keyword]
                     if (stats != null) {
                         if (level == context.maxLevel) stats.queryCount++
@@ -68,13 +69,13 @@ class FAST(bounds: Rectangle, gridGran: Int, maxLevel: Int) {
                         }
 
                         index[coordinate]?.let {cell ->
-                            if (cell.overlapsSpatially(entry.spatialRange)) {
-                                if (i == minX && j == minY) {
-                                    cell.addQuery(minKeyword!!, query)
-                                } else {
-                                    // TODO - Add non max level queries
-                                    print("Not inserting to lower levels!!")
-                                }
+                            if (cell.overlapsSpatially(entry.query.spatialRange)) {
+//                                if (i == minX && j == minY) {
+                                // TODO - Implement query sharing
+                                nextLevelQueries.addAll(cell.addQuery(minKeyword!!, entry.query))
+//                                } else {
+//                                    print("Not inserting to lower levels!!")
+//                                }
                             }
                             if (cell.textualIndex.isNullOrEmpty()) {
                                 index.remove(coordinate)
@@ -83,8 +84,10 @@ class FAST(bounds: Rectangle, gridGran: Int, maxLevel: Int) {
                     }
                 }
             }
-            // TODO - Add next level queries to current level queries
-            currentLevelQueries = ArrayList()
+            if (nextLevelQueries.isNotEmpty()) {
+                println("Potential next list: $nextLevelQueries")
+            }
+            currentLevelQueries = nextLevelQueries
             level--
         }
     }
@@ -132,7 +135,7 @@ fun main() {
 
     val queries = listOf(
         MinimalRangeQuery(1, listOf("k1", "k2"), Rectangle(.0, .0, 10.0, 10.0), 10),
-        MinimalRangeQuery(2, listOf("k1", "k2"), Rectangle(.0, .0, 10.0, 10.0), 3),
+        MinimalRangeQuery(2, listOf("k1", "k2"), Rectangle(.0, .0, 10.0, 10.0), 10),
         MinimalRangeQuery(3, listOf("k1", "k2"), Rectangle(.0, .0, 10.0, 10.0), 10),
         MinimalRangeQuery(4, listOf("k3", "k6"), Rectangle(.0, .0, 10.0, 10.0), 10),
         MinimalRangeQuery(5, listOf("k1", "k3"), Rectangle(.0, .0, 10.0, 10.0), 10),

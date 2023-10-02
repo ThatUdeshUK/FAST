@@ -7,11 +7,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="750c3344-a91f-4b1d-b944-4bf6f828ba06" name="Changes" comment="Initial commit with AKI implementation">
-      <change afterPath="$PROJECT_DIR$/src/main/kotlin/structures/Context.kt" afterDir="false" />
+    <list default="true" id="750c3344-a91f-4b1d-b944-4bf6f828ba06" name="Changes" comment="Implemented query removal on expiry">
+      <change afterPath="$PROJECT_DIR$/src/main/kotlin/models/ReinsertEntry.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/kotlin/FAST.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/FAST.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/models/MinimalRangeQuery.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/models/MinimalRangeQuery.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/constants/SpatioTextualConst.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/constants/SpatioTextualConst.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/models/Rectangle.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/models/Rectangle.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/structures/Context.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/structures/Context.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/kotlin/structures/SpatialCell.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/structures/SpatialCell.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -201,7 +203,9 @@
       <workItem from="1696258103840" duration="1271000" />
       <workItem from="1696262907260" duration="7000" />
       <workItem from="1696266343710" duration="3817000" />
-      <workItem from="1696270302889" duration="919000" />
+      <workItem from="1696270302889" duration="4886000" />
+      <workItem from="1696275545452" duration="99000" />
+      <workItem from="1696275831109" duration="165000" />
     </task>
     <task id="LOCAL-00001" summary="Initial commit with AKI implementation">
       <option name="closed" value="true" />
@@ -243,7 +247,15 @@
       <option name="project" value="LOCAL" />
       <updated>1696100883386</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="Implemented query removal on expiry">
+      <option name="closed" value="true" />
+      <created>1696271262717</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1696271262717</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -262,6 +274,7 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Initial commit with AKI implementation" />
-    <option name="LAST_COMMIT_MESSAGE" value="Initial commit with AKI implementation" />
+    <MESSAGE value="Implemented query removal on expiry" />
+    <option name="LAST_COMMIT_MESSAGE" value="Implemented query removal on expiry" />
   </component>
 </project>

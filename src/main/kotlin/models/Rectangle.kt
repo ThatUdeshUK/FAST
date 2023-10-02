@@ -1,6 +1,13 @@
 package models
 
+import kotlin.math.max
+import kotlin.math.min
+
 data class Rectangle(val min: Point, val max: Point) {
+    val area: Double
+        get() {
+            return (max.x - min.x) * (max.y - min.y)
+        }
 
     constructor(minX: Double, minY: Double, maxX: Double, maxY: Double) : this(Point(minX, minY), Point(maxX, maxY))
 
@@ -10,6 +17,13 @@ data class Rectangle(val min: Point, val max: Point) {
             (min.y / levelStep).toInt(),
             (max.x / levelStep).toInt(),
             (max.y / levelStep).toInt()
+        )
+    }
+
+    fun intersection(other: Rectangle): Rectangle {
+        return Rectangle(
+            Point(max(min.x, other.min.x), max(min.y, other.min.y)),
+            Point(min(max.x, max.x), min(max.y, max.y))
         )
     }
 
