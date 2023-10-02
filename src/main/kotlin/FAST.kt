@@ -8,33 +8,21 @@ import kotlin.math.pow
 /**
  * FAST spatial-keyword index.
  */
-class FAST(private val bounds: Rectangle, private val gridGran: Int, private val maxLevel: Int) {
+class FAST(bounds: Rectangle, gridGran: Int, maxLevel: Int) {
+    private val context: Context = Context(bounds, gridGran, maxLevel)
     private val index: ConcurrentHashMap<Int, SpatialCell> = ConcurrentHashMap()
-    private val keywordFrequencyMap: HashMap<String, KeywordFrequency> = HashMap()
-
-//    val localXStep: Double = SpatioTextualConst.MAX_RANGE_X / gridGran
-//    val localYStep: Double = SpatioTextualConst.MAX_RANGE_Y / gridGran
-//
-//    var minInsertedLevel: Int = -1
-//    var maxInsertedLevel: Int = -1
-//
-//    val minInsertedLevelInterleaved: Int = -1
-//    val maxInsertedLevelInterleaved: Int = -1
-
-    private var queryTimeStampCounter: Int = 0
-    private var objectTimeStampCounter: Int = 0
 
     fun addContinuousQuery(query: MinimalRangeQuery) {
-        queryTimeStampCounter.inc()
+        context.queryTimeStampCounter++
 
-        var level = maxLevel
+        var level = context.maxLevel
 
         var currentLevelQueries: ArrayList<MinimalRangeQuery> = ArrayList()
         currentLevelQueries.add(query)
 
         while (level >= 0 && currentLevelQueries.size > 0) {
 //            val nextLevelQueries: ArrayList<MinimalRangeQuery> = ArrayList()
-            val levelGran = (gridGran / 2.0.pow(level)).toInt() // calculate the gran_i (eq. 1)
+            val levelGran = (context.gridGran / 2.0.pow(level)).toInt() // calculate the gran_i (eq. 1)
             val levelStep = SpatioTextualConst.MAX_RANGE_X / levelGran // calculate the side_len_i (alt to eq. 2)
             currentLevelQueries.forEach { entry ->
                 val (minX, minY, maxX, maxY) = entry.spatialRange.mapToCell(levelStep) // Map bounds to spatial cell
@@ -50,16 +38,16 @@ class FAST(private val bounds: Rectangle, private val gridGran: Int, private val
                 var minCount: Int = Int.MAX_VALUE
 
                 entry.keywords.forEach { keyword ->
-                    var stats = keywordFrequencyMap[keyword]
+                    var stats = context.keywordFrequencyMap[keyword]
                     if (stats != null) {
-                        if (level == maxLevel) stats.queryCount++ // TODO: CLARIFY THIS!!!
+                        if (level == context.maxLevel) stats.queryCount++
                         if (stats.queryCount < minCount) {
                             minKeyword = keyword
                             minCount = stats.queryCount
                         }
                     } else {
-                        stats = KeywordFrequency(1, 1, objectTimeStampCounter)
-                        keywordFrequencyMap[keyword] = stats
+                        stats = KeywordFrequency(1, 1, context.objectTimeStampCounter)
+                        context.keywordFrequencyMap[keyword] = stats
 
                         if (minCount != 0) {
                             minKeyword = keyword
@@ -76,7 +64,7 @@ class FAST(private val bounds: Rectangle, private val gridGran: Int, private val
                             val bounds = SpatialCell.getBound(i, j, levelStep)
                             if (bounds.min.x > SpatioTextualConst.MAX_RANGE_X ||
                                 bounds.min.y > SpatioTextualConst.MAX_RANGE_Y) continue
-                            index[coordinate] = SpatialCell(bounds, coordinate, level)
+                            index[coordinate] = SpatialCell(context, bounds, coordinate, level)
                         }
 
                         index[coordinate]?.let {cell ->
@@ -102,7 +90,7 @@ class FAST(private val bounds: Rectangle, private val gridGran: Int, private val
     }
 
     fun printFrequencies() {
-        println("$keywordFrequencyMap")
+        println("${context.keywordFrequencyMap}")
     }
 
     private fun printTextualNode(keyword: String, node: TextualNode, level: Int=1) {
@@ -125,21 +113,13 @@ class FAST(private val bounds: Rectangle, private val gridGran: Int, private val
     }
 
     fun printIndex() {
-        println("Bounds=$bounds")
+        println("Bounds=${context.bounds}")
         index.forEach { (k, v) ->
             println("Level: $k -->")
             v.textualIndex?.forEach { (keyword, node) ->
                 printTextualNode(keyword, node)
             }
         }
-    }
-
-    companion object {
-        var numberOfHashEntries: Int = 0
-        var numberOfTrieNodes: Int = 0
-        var numberOfInsertedTextualNodes: Int = 0
-
-        var trieSplitThreshold: Int = SpatioTextualConst.TRIE_SPLIT_THRESHOLD
     }
 }
 
@@ -152,7 +132,7 @@ fun main() {
 
     val queries = listOf(
         MinimalRangeQuery(1, listOf("k1", "k2"), Rectangle(.0, .0, 10.0, 10.0), 10),
-        MinimalRangeQuery(2, listOf("k1", "k2"), Rectangle(.0, .0, 10.0, 10.0), 10),
+        MinimalRangeQuery(2, listOf("k1", "k2"), Rectangle(.0, .0, 10.0, 10.0), 3),
         MinimalRangeQuery(3, listOf("k1", "k2"), Rectangle(.0, .0, 10.0, 10.0), 10),
         MinimalRangeQuery(4, listOf("k3", "k6"), Rectangle(.0, .0, 10.0, 10.0), 10),
         MinimalRangeQuery(5, listOf("k1", "k3"), Rectangle(.0, .0, 10.0, 10.0), 10),

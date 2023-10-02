@@ -1,6 +1,5 @@
 package structures
 
-import FAST
 import constants.SpatioTextualConst
 import exceptions.InvalidState
 import models.MinimalRangeQuery
@@ -10,7 +9,12 @@ import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.abs
 
-class SpatialCell(private val bounds: Rectangle, private val coordinate: Int, private val level: Int) {
+class SpatialCell(
+    private val context: Context,
+    private val bounds: Rectangle,
+    private val coordinate: Int,
+    private val level: Int
+) {
     private lateinit var _textualIndex: ConcurrentHashMap<String, TextualNode>
     val textualIndex: ConcurrentHashMap<String, TextualNode>?
         get() {
@@ -45,7 +49,7 @@ class SpatialCell(private val bounds: Rectangle, private val coordinate: Int, pr
                     if (root is QueryListNode) {
                         queue.addAll(root.queries)
                         _textualIndex[it] = QueryTrieNode()
-                        FAST.numberOfTrieNodes++
+                        context.numberOfTrieNodes++
                     }
                 }
             }
@@ -60,28 +64,30 @@ class SpatialCell(private val bounds: Rectangle, private val coordinate: Int, pr
                 if (node == null) {
                     currentNode.subtree[newKeyword] = QueryListNode(nextQuery)
                     inserted = true
-                } else if (node is QueryListNode && node.queries.size < FAST.trieSplitThreshold) { // This is leq in impl
-                    if (!node.queries.contains(nextQuery)) {
-                        node.queries.add(nextQuery)
-                    }
+                } else if (node is QueryListNode && node.queries.size < context.trieSplitThreshold) { // This is leq in impl
+                    checkExpiryAndInsert(node, nextQuery)
                     inserted = true
-                } else if (node is QueryListNode && node.queries.size >= FAST.trieSplitThreshold) {
+                } else if (node is QueryListNode && node.queries.size >= context.trieSplitThreshold) {
                     val newTrie = QueryTrieNode()
-                    FAST.numberOfTrieNodes++
+                    context.numberOfTrieNodes++
 
                     node.queries.add(nextQuery)
                     currentNode.subtree[newKeyword] = newTrie
 
                     node.queries.forEach { otherQuery ->
-                        if (otherQuery.keywords.size > index + 1) {
-                            val otherKeyword = otherQuery.keywords[index + 1]
-                            val otherCell = currentNode.subtree[otherKeyword] ?: QueryListNode()
-                            if (!otherCell.queries.contains(otherQuery)) {
-                                otherCell.queries.add(otherQuery)
+                        if (otherQuery.expireTimestamp > context.queryTimeStampCounter) {
+                            if (otherQuery.keywords.size > index + 1) {
+                                val otherKeyword = otherQuery.keywords[index + 1]
+                                val otherCell = currentNode.subtree[otherKeyword] ?: QueryListNode()
+                                if (!otherCell.queries.contains(otherQuery)) {
+                                    otherCell.queries.add(otherQuery)
+                                }
+                                newTrie.subtree[otherKeyword] = otherCell
+                            } else {
+                                newTrie.queries.add(otherQuery)
                             }
-                            newTrie.subtree[otherKeyword] = otherCell
                         } else {
-                            newTrie.queries.add(otherQuery)
+                            removeQuery(otherQuery)
                         }
                     }
                     inserted = true
@@ -111,19 +117,16 @@ class SpatialCell(private val bounds: Rectangle, private val coordinate: Int, pr
 
         if (root == null) {
             // Keyword doesn't exist. Add a new top-level node with keyword: query.
-            FAST.numberOfHashEntries++
-            FAST.numberOfInsertedTextualNodes++
+            context.numberOfHashEntries++
+            context.numberOfInsertedTextualNodes++
             _textualIndex[keyword] = QueryListNode(query)
             return true
         } else {
             // Keyword already exists
-            return if (root is QueryListNode && root.queries.size < FAST.trieSplitThreshold) {
-                if (!root.queries.contains(query)) {
-                    root.queries.add(query)
-                    FAST.numberOfInsertedTextualNodes++
-                }
+            return if (root is QueryListNode && root.queries.size < context.trieSplitThreshold) {
+                checkExpiryAndInsert(root, query)
                 true
-            } else if (root is QueryListNode && root.queries.size >= FAST.trieSplitThreshold) {
+            } else if (root is QueryListNode && root.queries.size >= context.trieSplitThreshold) {
                 root.queries.contains(query)
             } else if (root is QueryTrieNode) false else {
                 throw InvalidState("Keyword insertion should not arrive here!")
@@ -131,28 +134,28 @@ class SpatialCell(private val bounds: Rectangle, private val coordinate: Int, pr
         }
     }
 
-    private fun swapToInfrequent(keyword: String, query: MinimalRangeQuery): Boolean {
-        val frequentRoot = _textualIndex[keyword]
-
-        if (frequentRoot is QueryListNode) {
-            var minSize = Int.MAX_VALUE
-            var swappableKeyQuery: Pair<String?, MinimalRangeQuery>? = null
-            frequentRoot.queries.forEach {
-                val (altKeyword, currentSize) = getAlternateKeyword(it)
-                if (currentSize < minSize && currentSize < SpatioTextualConst.TRIE_SPLIT_THRESHOLD) {
-                    minSize = currentSize
-                    swappableKeyQuery = Pair(altKeyword, it)
-                }
-            }
-
-            if (swappableKeyQuery != null && swappableKeyQuery!!.first != null) {
-                insertAtKeyword(swappableKeyQuery!!.first!!, swappableKeyQuery!!.second)
-                frequentRoot.queries.remove(swappableKeyQuery!!.second)
-                frequentRoot.queries.add(query)
-                return true
+    private fun checkExpiryAndInsert(node: TextualNode, query: MinimalRangeQuery) {
+        var inserted = false
+        node.queries.forEach {
+            if (it == query) inserted = true
+            if (it.expireTimestamp <= context.queryTimeStampCounter) {
+                removeQuery(it)
             }
         }
-        return false
+        if (!inserted) {
+            node.queries.add(query)
+            context.numberOfInsertedTextualNodes++
+        }
+    }
+
+    private fun removeQuery(query: MinimalRangeQuery) {
+        println("Deleting query: $query")
+        if (!query.deleted) {
+            query.deleted = true
+            for (keyword in query.keywords) {
+                context.keywordFrequencyMap[keyword]?.let { it.queryCount-- }
+            }
+        }
     }
 
     private fun getAlternateKeyword(query: MinimalRangeQuery): Pair<String?, Int> {
@@ -182,6 +185,30 @@ class SpatialCell(private val bounds: Rectangle, private val coordinate: Int, pr
                 (bounds.max.x >= other.min.x || abs(bounds.max.x - other.min.x) < .000001) &&
                 (bounds.min.y <= other.max.y || abs(bounds.min.y - other.max.y) < .000001) &&
                 (bounds.max.y >= other.min.y || abs(bounds.max.y - other.min.y) < .000001))
+    }
+
+    private fun swapToInfrequent(keyword: String, query: MinimalRangeQuery): Boolean {
+        val frequentRoot = _textualIndex[keyword]
+
+        if (frequentRoot is QueryListNode) {
+            var minSize = Int.MAX_VALUE
+            var swappableKeyQuery: Pair<String?, MinimalRangeQuery>? = null
+            frequentRoot.queries.forEach {
+                val (altKeyword, currentSize) = getAlternateKeyword(it)
+                if (currentSize < minSize && currentSize < SpatioTextualConst.TRIE_SPLIT_THRESHOLD) {
+                    minSize = currentSize
+                    swappableKeyQuery = Pair(altKeyword, it)
+                }
+            }
+
+            if (swappableKeyQuery != null && swappableKeyQuery!!.first != null) {
+                insertAtKeyword(swappableKeyQuery!!.first!!, swappableKeyQuery!!.second)
+                frequentRoot.queries.remove(swappableKeyQuery!!.second)
+                frequentRoot.queries.add(query)
+                return true
+            }
+        }
+        return false
     }
 
     override fun toString(): String {
