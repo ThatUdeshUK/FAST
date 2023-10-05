@@ -7,14 +7,17 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="750c3344-a91f-4b1d-b944-4bf6f828ba06" name="Changes" comment="Implemented query removal on expiry">
-      <change afterPath="$PROJECT_DIR$/src/main/kotlin/models/ReinsertEntry.kt" afterDir="false" />
+    <list default="true" id="750c3344-a91f-4b1d-b944-4bf6f828ba06" name="Changes" comment="Incorporated spatial pyramid">
+      <change afterPath="$PROJECT_DIR$/src/main/kotlin/models/DataObject.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/kotlin/FAST.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/FAST.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/kotlin/constants/SpatioTextualConst.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/constants/SpatioTextualConst.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/models/MinimalRangeQuery.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/models/MinimalRangeQuery.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/kotlin/models/Rectangle.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/models/Rectangle.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/kotlin/structures/Context.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/structures/Context.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/kotlin/structures/SpatialCell.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/structures/SpatialCell.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/structures/TextualNode.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/structures/TextualNode.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/kotlin/FASTTest.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/kotlin/FASTTest.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -99,7 +102,7 @@
       <recent name="" />
     </key>
   </component>
-  <component name="RunManager" selected="Kotlin.FASTKt">
+  <component name="RunManager" selected="Gradle.FASTTest.testSearches">
     <configuration name="FASTTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
@@ -124,7 +127,7 @@
       <RunAsTest>true</RunAsTest>
       <method v="2" />
     </configuration>
-    <configuration name="Tests in 'faster.test'" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="FASTTest.testInserts" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -136,6 +139,32 @@
         <option name="taskNames">
           <list>
             <option value=":test" />
+            <option value="--tests" />
+            <option value="&quot;FASTTest.testInserts&quot;" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>true</RunAsTest>
+      <method v="2" />
+    </configuration>
+    <configuration name="FASTTest.testSearches" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" value="" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value=":test" />
+            <option value="--tests" />
+            <option value="&quot;FASTTest.testSearches&quot;" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -177,10 +206,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Gradle.FASTTest.testSearches" />
+        <item itemvalue="Gradle.FASTTest.testInserts" />
+        <item itemvalue="Gradle.FASTTest" />
         <item itemvalue="Kotlin.FASTKt" />
         <item itemvalue="Gradle.faster [run]" />
-        <item itemvalue="Gradle.FASTTest" />
-        <item itemvalue="Gradle.Tests in 'faster.test'" />
       </list>
     </recent_temporary>
   </component>
@@ -205,7 +235,14 @@
       <workItem from="1696266343710" duration="3817000" />
       <workItem from="1696270302889" duration="4886000" />
       <workItem from="1696275545452" duration="99000" />
-      <workItem from="1696275831109" duration="165000" />
+      <workItem from="1696275831109" duration="237000" />
+      <workItem from="1696357362589" duration="4410000" />
+      <workItem from="1696368370758" duration="19000" />
+      <workItem from="1696429856960" duration="2969000" />
+      <workItem from="1696445123397" duration="3655000" />
+      <workItem from="1696503266508" duration="4339000" />
+      <workItem from="1696514627825" duration="2655000" />
+      <workItem from="1696518331051" duration="1439000" />
     </task>
     <task id="LOCAL-00001" summary="Initial commit with AKI implementation">
       <option name="closed" value="true" />
@@ -255,7 +292,15 @@
       <option name="project" value="LOCAL" />
       <updated>1696271262717</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="Incorporated spatial pyramid">
+      <option name="closed" value="true" />
+      <created>1696276060163</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1696276060163</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -275,6 +320,7 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Initial commit with AKI implementation" />
     <MESSAGE value="Implemented query removal on expiry" />
-    <option name="LAST_COMMIT_MESSAGE" value="Implemented query removal on expiry" />
+    <MESSAGE value="Incorporated spatial pyramid" />
+    <option name="LAST_COMMIT_MESSAGE" value="Incorporated spatial pyramid" />
   </component>
 </project>

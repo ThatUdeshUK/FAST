@@ -2,10 +2,7 @@ package structures
 
 import constants.SpatioTextualConst
 import exceptions.InvalidState
-import models.MinimalRangeQuery
-import models.Point
-import models.Rectangle
-import models.ReinsertEntry
+import models.*
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.abs
@@ -13,7 +10,7 @@ import kotlin.math.abs
 class SpatialCell(
     private val context: Context,
     private val bounds: Rectangle,
-    private val coordinate: Int,
+    val coordinatePoint: Point,
     private val level: Int
 ) {
     private lateinit var _textualIndex: ConcurrentHashMap<String, TextualNode>
@@ -152,14 +149,12 @@ class SpatialCell(
     private fun findQueriesToReinsert(node: QueryTrieNode): List<ReinsertEntry> {
         val compartor = SpatialOverlapCompartor(bounds)
         node.queries.sortWith(compartor)
-        val nextLevelQueries = node.queries.takeLast(node.queries.size/2)
+        val nextLevelQueries = node.queries.takeLast(node.queries.size / 2)
         node.queries.removeAll(nextLevelQueries)
-        println("Next level queries: $nextLevelQueries")
         return nextLevelQueries.map { ReinsertEntry(bounds.intersection(it.spatialRange), it) }
     }
 
     private fun removeQuery(query: MinimalRangeQuery) {
-        println("Deleting query: $query")
         if (!query.deleted) {
             query.deleted = true
             for (keyword in query.keywords) {
@@ -188,6 +183,31 @@ class SpatialCell(
         }
 
         return Pair(minKeyword, minSize)
+    }
+
+    fun searchQueries(obj: DataObject, keywords: List<String>): Pair<List<String>, List<MinimalRangeQuery>> {
+        val results = mutableListOf<MinimalRangeQuery>()
+        val pendingKeywords = mutableListOf<String>()
+        keywords.forEach { keyword ->
+            val textualNode = _textualIndex[keyword]
+            context.numberOfObjectSearchHashAccess++
+            when (textualNode) {
+                is QueryListNode -> {
+                    val found = textualNode.find(context, obj, keywords)
+                    results.addAll(found)
+                }
+
+                is QueryTrieNode -> {
+                    pendingKeywords.add(keyword)
+                }
+            }
+        }
+        pendingKeywords.forEachIndexed { index, keyword ->
+            val textualNode = _textualIndex[keyword] as QueryTrieNode
+            context.numberOfObjectSearchTrieNodeAccess++
+            results.addAll(textualNode.find(context, obj, keywords, index + 1))
+        }
+        return Pair(pendingKeywords, results)
     }
 
     fun overlapsSpatially(other: Rectangle): Boolean {
@@ -222,14 +242,18 @@ class SpatialCell(
     }
 
     override fun toString(): String {
-        return "SpatialCell(bounds=$bounds, coordinate=$coordinate, level=$level)"
+        return "SpatialCell(bounds=$bounds, coordinate=$coordinatePoint, level=$level)"
     }
 
 
     companion object {
         fun calcCoordinate(i: Int, x: Int, y: Int, granI: Int): Int {
-            return (i shl 22) + y * granI + x
-            // return i * granMax.toDouble().pow(2).toInt() + y * granI + x // method mentioned in the paper
+            return (i shl 22) + y * (granI + 1) + x // Modified for confilct issue below
+            // granI = 1
+            // (0, 1) = 1 * 1 + 0 -> 1
+            // (1, 0) = 0 * 1 + 1 -> 1
+
+            // Alt method - return i * granMax.toDouble().pow(2).toInt() + y * granI + x // method mentioned in the paper
         }
 
         fun getBound(i: Int, j: Int, step: Double): Rectangle {
@@ -246,7 +270,7 @@ internal class SpatialOverlapCompartor(private var bounds: Rectangle) : Comparat
     override fun compare(e1: MinimalRangeQuery, e2: MinimalRangeQuery): Int {
         val val1 = bounds.intersection(e1.spatialRange).area
         val val2 = bounds.intersection(e2.spatialRange).area
-        return if (val1 < val2)  1 else if (val1 == val2) 0 else -1
+        return if (val1 < val2) 1 else if (val1 == val2) 0 else -1
     }
 }
 

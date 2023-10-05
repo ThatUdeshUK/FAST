@@ -23,7 +23,7 @@ data class Rectangle(val min: Point, val max: Point) {
     fun intersection(other: Rectangle): Rectangle {
         return Rectangle(
             Point(max(min.x, other.min.x), max(min.y, other.min.y)),
-            Point(min(max.x, max.x), min(max.y, max.y))
+            Point(min(max.x, other.max.x), min(max.y, other.max.y))
         )
     }
 
