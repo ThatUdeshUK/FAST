@@ -7,16 +7,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="750c3344-a91f-4b1d-b944-4bf6f828ba06" name="Changes" comment="Incorporated spatial pyramid">
-      <change afterPath="$PROJECT_DIR$/src/main/kotlin/models/DataObject.kt" afterDir="false" />
+    <list default="true" id="750c3344-a91f-4b1d-b944-4bf6f828ba06" name="Changes" comment="Implemented index search">
+      <change afterPath="$PROJECT_DIR$/src/main/kotlin/parsers/Place.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/kotlin/FASTKNNTest.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle.kts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/kotlin/FAST.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/FAST.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/constants/SpatioTextualConst.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/constants/SpatioTextualConst.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/models/MinimalRangeQuery.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/models/MinimalRangeQuery.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/models/Rectangle.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/models/Rectangle.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/structures/Context.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/structures/Context.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/models/MinimalRangeQuery.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/models/Query.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/kotlin/structures/SpatialCell.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/structures/SpatialCell.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/structures/TextualNode.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/structures/TextualNode.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/test/kotlin/FASTTest.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/kotlin/FASTTest.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -74,7 +72,6 @@
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
     &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;android.gradle.sync.needed&quot;: &quot;true&quot;,
     &quot;com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrary&quot;: &quot;JUnit5&quot;,
     &quot;com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrarySuperClass.JUnit5&quot;: &quot;&quot;,
     &quot;git-widget-placeholder&quot;: &quot;main&quot;,
@@ -94,6 +91,9 @@
     <key name="CreateTestDialog.Recents.Supers">
       <recent name="" />
     </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/main/kotlin/parsers" />
+    </key>
     <key name="MoveKotlinTopLevelDeclarationsDialog.RECENTS_KEY">
       <recent name="structures" />
       <recent name="models" />
@@ -101,9 +101,12 @@
     <key name="CreateTestDialog.RecentsKey">
       <recent name="" />
     </key>
+    <key name="CopyKotlinDeclarationDialog.RECENTS_KEY">
+      <recent name="" />
+    </key>
   </component>
   <component name="RunManager" selected="Gradle.FASTTest.testSearches">
-    <configuration name="FASTTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="FASTTest" type="GradleRunConfiguration" factoryName="Gradle">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -175,18 +178,18 @@
       <RunAsTest>true</RunAsTest>
       <method v="2" />
     </configuration>
-    <configuration name="faster [run]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="faster [build]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
         <option name="externalSystemIdString" value="GRADLE" />
-        <option name="scriptParameters" />
+        <option name="scriptParameters" value="" />
         <option name="taskDescriptions">
           <list />
         </option>
         <option name="taskNames">
           <list>
-            <option value="run" />
+            <option value="build" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -200,17 +203,25 @@
     <configuration name="FASTKt" type="JetRunConfigurationType" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="FASTKt" />
       <module name="faster.main" />
+      <shortenClasspath name="NONE" />
+      <option name="VM_PARAMETERS" value="-Dorg.slf4j.simpleLogger.defaultLogLevel=DEBUG" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <list>
+      <item itemvalue="Gradle.FASTTest" />
+      <item itemvalue="Gradle.FASTTest.testSearches" />
+      <item itemvalue="Gradle.faster [build]" />
+      <item itemvalue="Gradle.FASTTest.testInserts" />
+      <item itemvalue="Kotlin.FASTKt" />
+    </list>
     <recent_temporary>
       <list>
         <item itemvalue="Gradle.FASTTest.testSearches" />
-        <item itemvalue="Gradle.FASTTest.testInserts" />
-        <item itemvalue="Gradle.FASTTest" />
         <item itemvalue="Kotlin.FASTKt" />
-        <item itemvalue="Gradle.faster [run]" />
+        <item itemvalue="Gradle.faster [build]" />
+        <item itemvalue="Gradle.FASTTest.testInserts" />
       </list>
     </recent_temporary>
   </component>
@@ -242,7 +253,12 @@
       <workItem from="1696445123397" duration="3655000" />
       <workItem from="1696503266508" duration="4339000" />
       <workItem from="1696514627825" duration="2655000" />
-      <workItem from="1696518331051" duration="1439000" />
+      <workItem from="1696518331051" duration="2066000" />
+      <workItem from="1696530915748" duration="7858000" />
+      <workItem from="1696603123388" duration="734000" />
+      <workItem from="1696689578617" duration="48000" />
+      <workItem from="1697023875635" duration="1278000" />
+      <workItem from="1697050636767" duration="1623000" />
     </task>
     <task id="LOCAL-00001" summary="Initial commit with AKI implementation">
       <option name="closed" value="true" />
@@ -300,7 +316,15 @@
       <option name="project" value="LOCAL" />
       <updated>1696276060163</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="Implemented index search">
+      <option name="closed" value="true" />
+      <created>1696520595201</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1696520595201</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -321,6 +345,7 @@
     <MESSAGE value="Initial commit with AKI implementation" />
     <MESSAGE value="Implemented query removal on expiry" />
     <MESSAGE value="Incorporated spatial pyramid" />
-    <option name="LAST_COMMIT_MESSAGE" value="Incorporated spatial pyramid" />
+    <MESSAGE value="Implemented index search" />
+    <option name="LAST_COMMIT_MESSAGE" value="Implemented index search" />
   </component>
 </project>

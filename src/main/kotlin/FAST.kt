@@ -1,14 +1,18 @@
+import com.google.gson.Gson
 import constants.SpatioTextualConst
 import models.*
+import parsers.Place
 import structures.*
+import java.io.File
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.math.log
 import kotlin.math.pow
 
 /**
  * FAST spatial-keyword index.
  */
-class FAST(bounds: Rectangle, gridGran: Int, maxLevel: Int) {
-    private val context: Context = Context(bounds, gridGran, maxLevel)
+class FAST(bounds: Rectangle, gridGran: Int) {
+    private val context: Context = Context(bounds, gridGran, log(gridGran.toDouble(), 2.0).toInt())
     private val index: ConcurrentHashMap<Int, SpatialCell> = ConcurrentHashMap()
 
     fun addContinuousQuery(query: MinimalRangeQuery) {
@@ -152,5 +156,27 @@ class FAST(bounds: Rectangle, gridGran: Int, maxLevel: Int) {
 }
 
 fun main() {
+    val fast = FAST(
+        Rectangle(0.0, 0.0, SpatioTextualConst.MAX_RANGE_X, SpatioTextualConst.MAX_RANGE_Y),
+        8,
+    )
 
+    val queries = listOf<MinimalRangeQuery>()
+    queries.forEach {
+        fast.addContinuousQuery(it)
+    }
+
+    val gson = Gson()
+    var oidCounter = 0
+    File("/Users/udeshuk/Downloads/places_dump_20110628/places_dump_IN.geojson").forEachLine {
+        val place = gson.fromJson(it, Place::class.java)
+        if (place.keywords.isNotEmpty()) {
+            val obj = place.toDataObject(oidCounter, 10000)
+
+            fast.searchQueries(obj)
+            oidCounter++
+        }
+    }
+
+    fast.printIndex()
 }

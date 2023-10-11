@@ -40,9 +40,8 @@ class FASTTest {
 
     @Test
     fun testInserts() {
-         val testFAST = FAST(
+        val testFAST = FAST(
             Rectangle(0.0, 0.0, SpatioTextualConst.MAX_RANGE_X, SpatioTextualConst.MAX_RANGE_Y),
-            2,
             2
         )
 
@@ -58,7 +57,6 @@ class FASTTest {
     fun testSearches() {
         val testFAST = FAST(
             Rectangle(0.0, 0.0, SpatioTextualConst.MAX_RANGE_X, SpatioTextualConst.MAX_RANGE_Y),
-            2,
             2
         )
 
