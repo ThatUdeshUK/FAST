@@ -10,8 +10,8 @@ import kotlin.math.abs
 class SpatialCell(
     private val context: Context,
     private val bounds: Rectangle,
-    val coordinatePoint: Point,
-    private val level: Int
+    private val _coordinatePoint: Point,
+    private val _level: Int
 ) {
     private lateinit var _textualIndex: ConcurrentHashMap<String, TextualNode>
     val textualIndex: ConcurrentHashMap<String, TextualNode>?
@@ -19,6 +19,10 @@ class SpatialCell(
             if (!::_textualIndex.isInitialized) return null
             return _textualIndex
         }
+    val coordinatePoint: Point
+        get() = _coordinatePoint
+    val level: Int
+        get() = _level
 
     init {
         bounds.max.x -= 0.001
@@ -73,7 +77,7 @@ class SpatialCell(
                     currentNode.subtree[newKeyword] = newTrie
 
                     node.queries.forEach { otherQuery ->
-                        if (otherQuery.expireTimestamp > context.queryTimeStampCounter) {
+                        if (otherQuery.et > context.queryTimeStampCounter) {
                             if (otherQuery.keywords.size > index + 1) {
                                 val otherKeyword = otherQuery.keywords[index + 1]
                                 val otherCell = currentNode.subtree[otherKeyword] ?: QueryListNode()
@@ -136,7 +140,7 @@ class SpatialCell(
         var inserted = false
         node.queries.forEach {
             if (it == query) inserted = true
-            if (it.expireTimestamp <= context.queryTimeStampCounter) {
+            if (it.et <= context.queryTimeStampCounter) {
                 removeQuery(it)
             }
         }
@@ -242,7 +246,7 @@ class SpatialCell(
     }
 
     override fun toString(): String {
-        return "SpatialCell(bounds=$bounds, coordinate=$coordinatePoint, level=$level)"
+        return "SpatialCell(bounds=$bounds, coordinate=$_coordinatePoint, level=$_level)"
     }
 
 

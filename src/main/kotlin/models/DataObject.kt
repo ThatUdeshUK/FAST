@@ -2,7 +2,15 @@ package models
 
 import structures.SpatialCell
 
-class DataObject(private val id: Int, val keywords: List<String>, private val location: Point, private val timestamp: Int) {
+class DataObject(
+    private val id: Int,
+    val keywords: List<String>,
+    private val location: Point,
+    val st: Int,
+    val et: Int
+) {
+
+    constructor(id: Int, keywords: List<String>, location: Point, st: Int): this(id, keywords, location, st, st)
 
     fun overlaps(query: MinimalRangeQuery): Boolean {
         return overlapsSpatially(query.spatialRange) && containsTextually(query.keywords)
@@ -38,6 +46,6 @@ class DataObject(private val id: Int, val keywords: List<String>, private val lo
     }
 
     override fun toString(): String {
-        return "DataObject(id=$id, keywords=$keywords, location=$location, timestamp=$timestamp)"
+        return "DataObject(id=$id, keywords=$keywords, location=$location, st=$st, et=$et)"
     }
 }

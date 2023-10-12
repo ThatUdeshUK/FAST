@@ -7,15 +7,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="750c3344-a91f-4b1d-b944-4bf6f828ba06" name="Changes" comment="Implemented index search">
-      <change afterPath="$PROJECT_DIR$/src/main/kotlin/parsers/Place.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/kotlin/FASTKNNTest.kt" afterDir="false" />
+    <list default="true" id="750c3344-a91f-4b1d-b944-4bf6f828ba06" name="Changes" comment="Bug fixes and initialized KNN structures">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle.kts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/kotlin/FAST.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/FAST.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/models/MinimalRangeQuery.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/models/Query.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/structures/SpatialCell.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/structures/SpatialCell.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/kotlin/FASTTest.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/kotlin/FASTTest.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/kotlin/FASTKNNTest.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/kotlin/FASTKNNTest.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -105,7 +100,31 @@
       <recent name="" />
     </key>
   </component>
-  <component name="RunManager" selected="Gradle.FASTTest.testSearches">
+  <component name="RunManager" selected="Gradle.FASTTest">
+    <configuration name="FASTKNNTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" value="" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value=":test" />
+            <option value="--tests" />
+            <option value="&quot;FASTKNNTest&quot;" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>true</RunAsTest>
+      <method v="2" />
+    </configuration>
     <configuration name="FASTTest" type="GradleRunConfiguration" factoryName="Gradle">
       <ExternalSystemSettings>
         <option name="executionName" />
@@ -211,6 +230,7 @@
     </configuration>
     <list>
       <item itemvalue="Gradle.FASTTest" />
+      <item itemvalue="Gradle.FASTKNNTest" />
       <item itemvalue="Gradle.FASTTest.testSearches" />
       <item itemvalue="Gradle.faster [build]" />
       <item itemvalue="Gradle.FASTTest.testInserts" />
@@ -218,10 +238,11 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Gradle.FASTTest.testSearches" />
         <item itemvalue="Kotlin.FASTKt" />
-        <item itemvalue="Gradle.faster [build]" />
         <item itemvalue="Gradle.FASTTest.testInserts" />
+        <item itemvalue="Gradle.FASTKNNTest" />
+        <item itemvalue="Gradle.FASTTest.testSearches" />
+        <item itemvalue="Gradle.faster [build]" />
       </list>
     </recent_temporary>
   </component>
@@ -258,7 +279,7 @@
       <workItem from="1696603123388" duration="734000" />
       <workItem from="1696689578617" duration="48000" />
       <workItem from="1697023875635" duration="1278000" />
-      <workItem from="1697050636767" duration="1623000" />
+      <workItem from="1697050636767" duration="4145000" />
     </task>
     <task id="LOCAL-00001" summary="Initial commit with AKI implementation">
       <option name="closed" value="true" />
@@ -324,7 +345,23 @@
       <option name="project" value="LOCAL" />
       <updated>1696520595201</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="Imported Places dataset">
+      <option name="closed" value="true" />
+      <created>1697052335624</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1697052335624</updated>
+    </task>
+    <task id="LOCAL-00010" summary="Bug fixes and initialized KNN structures">
+      <option name="closed" value="true" />
+      <created>1697122686472</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1697122686472</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -346,6 +383,8 @@
     <MESSAGE value="Implemented query removal on expiry" />
     <MESSAGE value="Incorporated spatial pyramid" />
     <MESSAGE value="Implemented index search" />
-    <option name="LAST_COMMIT_MESSAGE" value="Implemented index search" />
+    <MESSAGE value="Imported Places dataset" />
+    <MESSAGE value="Bug fixes and initialized KNN structures" />
+    <option name="LAST_COMMIT_MESSAGE" value="Bug fixes and initialized KNN structures" />
   </component>
 </project>

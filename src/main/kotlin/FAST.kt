@@ -15,7 +15,18 @@ class FAST(bounds: Rectangle, gridGran: Int) {
     private val context: Context = Context(bounds, gridGran, log(gridGran.toDouble(), 2.0).toInt())
     private val index: ConcurrentHashMap<Int, SpatialCell> = ConcurrentHashMap()
 
-    fun addContinuousQuery(query: MinimalRangeQuery) {
+    fun addContinuousQuery(query: Query) {
+        when (query) {
+            is MinimalRangeQuery -> addContinuousMinimalRangeQuery(query)
+            is KNNQuery -> addContinuousKNNQuery(query)
+        }
+    }
+
+    private fun addContinuousKNNQuery(query: KNNQuery) {
+        // TODO - implement this
+    }
+
+    private fun addContinuousMinimalRangeQuery(query: MinimalRangeQuery) {
         context.queryTimeStampCounter++
 
         var level = context.maxLevel
@@ -27,6 +38,7 @@ class FAST(bounds: Rectangle, gridGran: Int) {
             val nextLevelQueries: ArrayList<ReinsertEntry> = ArrayList()
             val levelGran = (context.gridGran / 2.0.pow(level)).toInt() // calculate the gran_i (eq. 1)
             val levelStep = SpatioTextualConst.MAX_RANGE_X / levelGran // calculate the side_len_i (alt to eq. 2)
+
             currentLevelQueries.forEach { entry ->
                 val (minX, minY, maxX, maxY) = entry.range.mapToCell(levelStep) // Map bounds to spatial cell
 
@@ -72,12 +84,8 @@ class FAST(bounds: Rectangle, gridGran: Int) {
 
                         index[coordinate]?.let { cell ->
                             if (cell.overlapsSpatially(entry.query.spatialRange)) {
-//                                if (i == minX && j == minY) {
                                 // TODO - Implement query sharing
                                 nextLevelQueries.addAll(cell.addQuery(minKeyword!!, entry.query))
-//                                } else {
-//                                    print("Not inserting to lower levels!!")
-//                                }
                             }
                             if (cell.textualIndex.isNullOrEmpty()) {
                                 index.remove(coordinate)
@@ -128,7 +136,7 @@ class FAST(bounds: Rectangle, gridGran: Int) {
     fun printIndex() {
         println("Bounds=${context.bounds}")
         index.forEach { (k, v) ->
-            println("Level: $k, ${v.coordinatePoint} -->")
+            println("Level: ${v.level}, Loc: ${v.coordinatePoint}, Key: $k -->")
             v.textualIndex?.forEach { (keyword, node) ->
                 printTextualNode(keyword, node)
             }
@@ -155,7 +163,13 @@ class FAST(bounds: Rectangle, gridGran: Int) {
     }
 }
 
-fun main() {
+fun main(args: Array<String>) {
+    if (args.isEmpty()) {
+        println("Path to Places dataset should be provided as an argument.")
+        println("Run the `FASTTest` to evaluate a toy example, instead.")
+        return
+    }
+
     val fast = FAST(
         Rectangle(0.0, 0.0, SpatioTextualConst.MAX_RANGE_X, SpatioTextualConst.MAX_RANGE_Y),
         8,
@@ -168,7 +182,7 @@ fun main() {
 
     val gson = Gson()
     var oidCounter = 0
-    File("/Users/udeshuk/Downloads/places_dump_20110628/places_dump_IN.geojson").forEachLine {
+    File(args[0]).forEachLine {
         val place = gson.fromJson(it, Place::class.java)
         if (place.keywords.isNotEmpty()) {
             val obj = place.toDataObject(oidCounter, 10000)
