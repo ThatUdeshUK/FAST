@@ -26,5 +26,5 @@ kotlin {
 }
 
 application {
-    mainClass.set("MainKt")
+    mainClass.set("FASTKt")
 }
