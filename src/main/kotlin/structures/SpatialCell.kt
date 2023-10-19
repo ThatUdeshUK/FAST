@@ -29,12 +29,12 @@ class SpatialCell(
         bounds.max.y -= 0.001
     }
 
-    fun addQuery(keyword: String, query: MinimalRangeQuery, swap: Boolean = false): Set<ReinsertEntry> {
+    fun addQuery(keyword: String, query: Query, swap: Boolean = false): Set<ReinsertEntry> {
         if (!::_textualIndex.isInitialized) {
             _textualIndex = ConcurrentHashMap()
         }
 
-        val queue: Queue<MinimalRangeQuery> = LinkedList()
+        val queue: Queue<Query> = LinkedList()
         val nextLevelQueries: MutableSet<ReinsertEntry> = mutableSetOf()
         if (insertAtKeyword(keyword, query)) return nextLevelQueries else queue.add(query)
 
@@ -100,7 +100,7 @@ class SpatialCell(
                         node.queries.add(nextQuery)
                     }
                     inserted = true
-                    if (node.queries.size > context.degredationRatio) {
+                    if (node.queries.filterIsInstance<MinimalRangeQuery>().size > context.degredationRatio) {
                         nextLevelQueries.addAll(findQueriesToReinsert(node))
                     }
                 }
@@ -114,7 +114,7 @@ class SpatialCell(
         return nextLevelQueries
     }
 
-    private fun insertAtKeyword(keyword: String, query: MinimalRangeQuery): Boolean {
+    private fun insertAtKeyword(keyword: String, query: Query): Boolean {
         val root = _textualIndex[keyword]
 
         if (root == null) {
@@ -136,7 +136,7 @@ class SpatialCell(
         }
     }
 
-    private fun checkExpiryAndInsert(node: TextualNode, query: MinimalRangeQuery) {
+    private fun checkExpiryAndInsert(node: TextualNode, query: Query) {
         var inserted = false
         node.queries.forEach {
             if (it == query) inserted = true
@@ -152,13 +152,13 @@ class SpatialCell(
 
     private fun findQueriesToReinsert(node: QueryTrieNode): List<ReinsertEntry> {
         val compartor = SpatialOverlapCompartor(bounds)
-        node.queries.sortWith(compartor)
-        val nextLevelQueries = node.queries.takeLast(node.queries.size / 2)
+        val mbrQueries = node.queries.filterIsInstance<MinimalRangeQuery>().sortedWith(compartor)
+        val nextLevelQueries = mbrQueries.takeLast(mbrQueries.size / 2)
         node.queries.removeAll(nextLevelQueries)
         return nextLevelQueries.map { ReinsertEntry(bounds.intersection(it.spatialRange), it) }
     }
 
-    private fun removeQuery(query: MinimalRangeQuery) {
+    private fun removeQuery(query: Query) {
         if (!query.deleted) {
             query.deleted = true
             for (keyword in query.keywords) {
@@ -167,7 +167,7 @@ class SpatialCell(
         }
     }
 
-    private fun getAlternateKeyword(query: MinimalRangeQuery): Pair<String?, Int> {
+    private fun getAlternateKeyword(query: Query): Pair<String?, Int> {
         var minSize = Int.MAX_VALUE
         var minKeyword: String? = null
 
@@ -189,8 +189,8 @@ class SpatialCell(
         return Pair(minKeyword, minSize)
     }
 
-    fun searchQueries(obj: DataObject, keywords: List<String>): Pair<List<String>, List<MinimalRangeQuery>> {
-        val results = mutableListOf<MinimalRangeQuery>()
+    fun searchQueries(obj: DataObject, keywords: List<String>): Pair<List<String>, List<Query>> {
+        val results = mutableListOf<Query>()
         val pendingKeywords = mutableListOf<String>()
         keywords.forEach { keyword ->
             val textualNode = _textualIndex[keyword]
@@ -221,12 +221,19 @@ class SpatialCell(
                 (bounds.max.y >= other.min.y || abs(bounds.max.y - other.min.y) < .000001))
     }
 
-    private fun swapToInfrequent(keyword: String, query: MinimalRangeQuery): Boolean {
+    fun overlapsSpatially(other: Point): Boolean {
+        return ((bounds.min.x <= other.x || abs(bounds.min.x - other.x) < .000001) &&
+                (bounds.max.x >= other.x || abs(bounds.max.x - other.x) < .000001) &&
+                (bounds.min.y <= other.y || abs(bounds.min.y - other.y) < .000001) &&
+                (bounds.max.y >= other.y || abs(bounds.max.y - other.y) < .000001))
+    }
+
+    private fun swapToInfrequent(keyword: String, query: Query): Boolean {
         val frequentRoot = _textualIndex[keyword]
 
         if (frequentRoot is QueryListNode) {
             var minSize = Int.MAX_VALUE
-            var swappableKeyQuery: Pair<String?, MinimalRangeQuery>? = null
+            var swappableKeyQuery: Pair<String?, Query>? = null
             frequentRoot.queries.forEach {
                 val (altKeyword, currentSize) = getAlternateKeyword(it)
                 if (currentSize < minSize && currentSize < SpatioTextualConst.TRIE_SPLIT_THRESHOLD) {

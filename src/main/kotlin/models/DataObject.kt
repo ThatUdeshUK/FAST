@@ -1,19 +1,26 @@
 package models
 
+import exceptions.InvalidState
 import structures.SpatialCell
+import kotlin.math.pow
+import kotlin.math.sqrt
 
 class DataObject(
     private val id: Int,
     val keywords: List<String>,
-    private val location: Point,
+    val location: Point,
     val st: Int,
     val et: Int
 ) {
 
     constructor(id: Int, keywords: List<String>, location: Point, st: Int): this(id, keywords, location, st, st)
 
-    fun overlaps(query: MinimalRangeQuery): Boolean {
-        return overlapsSpatially(query.spatialRange) && containsTextually(query.keywords)
+    fun overlaps(query: Query): Boolean {
+        return when(query) {
+            is MinimalRangeQuery -> overlapsSpatially(query.spatialRange) && containsTextually(query.keywords)
+            is KNNQuery -> overlapsSpatially(query.location, query.ar) && containsTextually(query.keywords)
+            else -> throw InvalidState("Should not arrive here.")
+        }
     }
 
     private fun containsTextually(other: List<String>): Boolean {
@@ -34,9 +41,13 @@ class DataObject(
         return j == other.size
     }
 
-    fun overlapsSpatially(rectangle: Rectangle): Boolean {
+    private fun overlapsSpatially(rectangle: Rectangle): Boolean {
         return !(location.x - rectangle.min.x < 0 || location.x - rectangle.max.x > 0 ||
                 location.y - rectangle.min.y < 0 || location.y - rectangle.max.y > 0)
+    }
+
+    private fun overlapsSpatially(loc: Point, ar: Double): Boolean {
+        return sqrt((location.x - loc.x).pow(2.0) + (location.y - loc.y).pow(2.0)) < ar
     }
 
     fun calcCoordinate(i: Int, step: Double, granI: Int): Int {

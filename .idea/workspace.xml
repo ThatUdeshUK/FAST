@@ -7,10 +7,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="750c3344-a91f-4b1d-b944-4bf6f828ba06" name="Changes" comment="Bug fixes and initialized KNN structures">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    <list default="true" id="750c3344-a91f-4b1d-b944-4bf6f828ba06" name="Changes" comment="Add KNN query support (although it's not efficient :/)">
       <change beforePath="$PROJECT_DIR$/src/main/kotlin/FAST.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/FAST.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/kotlin/FASTKNNTest.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/kotlin/FASTKNNTest.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -100,7 +98,7 @@
       <recent name="" />
     </key>
   </component>
-  <component name="RunManager" selected="Gradle.FASTTest">
+  <component name="RunManager" selected="Gradle.FASTKNNTest">
     <configuration name="FASTKNNTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
@@ -238,9 +236,9 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Gradle.FASTKNNTest" />
         <item itemvalue="Kotlin.FASTKt" />
         <item itemvalue="Gradle.FASTTest.testInserts" />
-        <item itemvalue="Gradle.FASTKNNTest" />
         <item itemvalue="Gradle.FASTTest.testSearches" />
         <item itemvalue="Gradle.faster [build]" />
       </list>
@@ -279,7 +277,11 @@
       <workItem from="1696603123388" duration="734000" />
       <workItem from="1696689578617" duration="48000" />
       <workItem from="1697023875635" duration="1278000" />
-      <workItem from="1697050636767" duration="4145000" />
+      <workItem from="1697050636767" duration="5929000" />
+      <workItem from="1697140449196" duration="2994000" />
+      <workItem from="1697334822112" duration="11000" />
+      <workItem from="1697657995241" duration="1408000" />
+      <workItem from="1697724601408" duration="10061000" />
     </task>
     <task id="LOCAL-00001" summary="Initial commit with AKI implementation">
       <option name="closed" value="true" />
@@ -361,7 +363,31 @@
       <option name="project" value="LOCAL" />
       <updated>1697122686472</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="Bug fixes and initialized KNN structures">
+      <option name="closed" value="true" />
+      <created>1697123481258</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1697123481258</updated>
+    </task>
+    <task id="LOCAL-00012" summary="Add KNN query support (although it's not efficient :/)">
+      <option name="closed" value="true" />
+      <created>1697742563830</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1697742563830</updated>
+    </task>
+    <task id="LOCAL-00013" summary="Add KNN query support (although it's not efficient :/)">
+      <option name="closed" value="true" />
+      <created>1697742663046</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1697742663046</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -385,6 +411,34 @@
     <MESSAGE value="Implemented index search" />
     <MESSAGE value="Imported Places dataset" />
     <MESSAGE value="Bug fixes and initialized KNN structures" />
-    <option name="LAST_COMMIT_MESSAGE" value="Bug fixes and initialized KNN structures" />
+    <MESSAGE value="Add KNN query support (although it's not efficient :/)" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add KNN query support (although it's not efficient :/)" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint type="kotlin-line">
+          <url>file://$PROJECT_DIR$/src/main/kotlin/structures/SpatialCell.kt</url>
+          <line>44</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="kotlin-line">
+          <url>file://$PROJECT_DIR$/src/main/kotlin/FAST.kt</url>
+          <line>276</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="kotlin-line">
+          <url>file://$PROJECT_DIR$/src/main/kotlin/FAST.kt</url>
+          <line>263</line>
+          <option name="timeStamp" value="7" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+    <pin-to-top-manager>
+      <pinned-members>
+        <PinnedItemInfo parentTag="java.lang.String" memberName="hash" />
+        <PinnedItemInfo parentTag="FAST" memberName="context" />
+      </pinned-members>
+    </pin-to-top-manager>
   </component>
 </project>
