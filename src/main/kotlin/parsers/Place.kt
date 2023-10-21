@@ -18,8 +18,8 @@ data class Place(
             return properties?.tags ?: emptyList()
         }
 
-    fun toDataObject(oid: Int, expireTimestap: Int): DataObject {
-        return DataObject(oid, keywords, coordinate, expireTimestap)
+    fun toDataObject(oid: Int, expireTimestamp: Int): DataObject {
+        return DataObject(oid, keywords, coordinate, expireTimestamp)
     }
 
     override fun toString(): String {

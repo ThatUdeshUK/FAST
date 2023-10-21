@@ -9,8 +9,8 @@ class DataObject(
     private val id: Int,
     val keywords: List<String>,
     val location: Point,
-    val st: Int,
-    val et: Int
+    private val st: Int,
+    private val et: Int
 ) {
 
     constructor(id: Int, keywords: List<String>, location: Point, st: Int): this(id, keywords, location, st, st)

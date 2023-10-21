@@ -14,7 +14,7 @@ abstract class TextualNode {
             if (keywords.size >= it.keywords.size && obj.overlaps(it)) {
                 if (it is KNNQuery) {
                     it.pushToQueue(obj)
-                    if (it.moniteredQueries.contains(obj)) return it
+                    if (it.monitoredQueries.contains(obj)) return it
                 } else return it
             }
             return null

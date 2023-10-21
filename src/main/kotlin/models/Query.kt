@@ -19,24 +19,24 @@ class MinimalRangeQuery(
 }
 
 class KNNQuery(
-    id: Int, keywords: List<String>, val location: Point, val K: Int, et: Int
+    id: Int, keywords: List<String>, val location: Point, private val k: Int, et: Int
 ) : Query(id, keywords, et) {
     val ar: Double = SpatioTextualConst.MAX_RANGE_X
 
-    private lateinit var _moniteredQueries: PriorityQueue<DataObject>
-    val moniteredQueries: PriorityQueue<DataObject>
+    private lateinit var _monitoredQueries: PriorityQueue<DataObject>
+    val monitoredQueries: PriorityQueue<DataObject>
         get() {
-            if (!::_moniteredQueries.isInitialized) {
-                _moniteredQueries = PriorityQueue(K, EuclidianCompartor(location))
+            if (!::_monitoredQueries.isInitialized) {
+                _monitoredQueries = PriorityQueue(k, EuclideanComparator(location))
             }
-            return _moniteredQueries
+            return _monitoredQueries
         }
 
     fun pushToQueue(obj: DataObject) {
-        if (!moniteredQueries.contains(obj)) {
-            moniteredQueries.add(obj)
-            if (moniteredQueries.size > K) {
-                moniteredQueries.poll()
+        if (!monitoredQueries.contains(obj)) {
+            monitoredQueries.add(obj)
+            if (monitoredQueries.size > k) {
+                monitoredQueries.poll()
             }
         }
     }
@@ -46,7 +46,7 @@ class KNNQuery(
     }
 }
 
-internal class EuclidianCompartor(private var point: Point) : Comparator<DataObject> {
+internal class EuclideanComparator(private var point: Point) : Comparator<DataObject> {
     override fun compare(e1: DataObject, e2: DataObject): Int {
         val val1 = (point.x - e1.location.x).pow(2) + (point.y - e1.location.y).pow(2)
         val val2 = (point.x - e2.location.x).pow(2) + (point.y - e2.location.y).pow(2)

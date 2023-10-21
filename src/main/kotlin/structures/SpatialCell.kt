@@ -1,6 +1,5 @@
 package structures
 
-import constants.SpatioTextualConst
 import exceptions.InvalidState
 import models.*
 import java.util.*
@@ -29,18 +28,53 @@ class SpatialCell(
         bounds.max.y -= 0.001
     }
 
-    fun addQuery(keyword: String, query: Query, swap: Boolean = false): Set<ReinsertEntry> {
+    fun addSharedQuery(keyword: String, query: Query, sharedNodes: QueryListNode?): Set<ReinsertEntry> {
+        if (!::_textualIndex.isInitialized) {
+            _textualIndex = ConcurrentHashMap()
+        }
+
+        if (!_textualIndex.containsKey(keyword) && sharedNodes != null) {
+            context.numberOfHashEntries++
+            _textualIndex[keyword] = sharedNodes
+        } else if (sharedNodes != null) {
+            val node = _textualIndex[keyword]
+            if (node is QueryListNode) {
+                return emptySet()
+            } else if (node is QueryTrieNode) {
+                val nonSharedNodes = node.queries.filter { !sharedNodes.queries.contains(it) }
+                if (nonSharedNodes.isNotEmpty() &&
+                    nonSharedNodes.size + sharedNodes.queries.size < context.trieSplitThreshold
+                ) {
+                    sharedNodes.queries.addAll(nonSharedNodes)
+                    _textualIndex[keyword] = sharedNodes
+                } else {
+                    return addQuery(keyword, query, sharedNodes).second
+                }
+            } else {
+                return addQuery(keyword, query, sharedNodes).second
+            }
+        }
+        return emptySet()
+    }
+
+    fun addQuery(
+        keyword: String,
+        query: Query,
+        sharedNodes: QueryListNode? = null
+    ): Pair<QueryListNode?, Set<ReinsertEntry>> {
         if (!::_textualIndex.isInitialized) {
             _textualIndex = ConcurrentHashMap()
         }
 
         val queue: Queue<Query> = LinkedList()
         val nextLevelQueries: MutableSet<ReinsertEntry> = mutableSetOf()
-        if (insertAtKeyword(keyword, query)) return nextLevelQueries else queue.add(query)
+        if (insertAtKeyword(keyword, query, sharedNodes)) return Pair(
+            _textualIndex[keyword].takeIf { it is QueryListNode && it.queries.size > 1 } as QueryListNode?,
+            nextLevelQueries
+        ) else queue.add(query)
 
         while (queue.isNotEmpty()) {
             val nextQuery = queue.remove()
-            if (swap && swapToInfrequent(keyword, nextQuery)) continue
 
             val (altKeyword, _) = getAlternateKeyword(nextQuery)
             if (keyword != altKeyword && !altKeyword.isNullOrEmpty() && insertAtKeyword(altKeyword, nextQuery)) continue
@@ -100,7 +134,7 @@ class SpatialCell(
                         node.queries.add(nextQuery)
                     }
                     inserted = true
-                    if (node.queries.filterIsInstance<MinimalRangeQuery>().size > context.degredationRatio) {
+                    if (node.queries.filterIsInstance<MinimalRangeQuery>().size > context.degradationRatio) {
                         nextLevelQueries.addAll(findQueriesToReinsert(node))
                     }
                 }
@@ -111,10 +145,10 @@ class SpatialCell(
             }
         }
 
-        return nextLevelQueries
+        return Pair(null, nextLevelQueries)
     }
 
-    private fun insertAtKeyword(keyword: String, query: Query): Boolean {
+    private fun insertAtKeyword(keyword: String, query: Query, sharedNodes: QueryListNode? = null): Boolean {
         val root = _textualIndex[keyword]
 
         if (root == null) {
@@ -126,10 +160,13 @@ class SpatialCell(
         } else {
             // Keyword already exists
             return if (root is QueryListNode && root.queries.size < context.trieSplitThreshold) {
-                checkExpiryAndInsert(root, query)
+                if (root != sharedNodes)
+                    checkExpiryAndInsert(root, query)
                 true
             } else if (root is QueryListNode && root.queries.size >= context.trieSplitThreshold) {
-                root.queries.contains(query)
+                if (root != sharedNodes) {
+                    root.queries.contains(query)
+                } else true
             } else if (root is QueryTrieNode) false else {
                 throw InvalidState("Keyword insertion should not arrive here!")
             }
@@ -151,8 +188,8 @@ class SpatialCell(
     }
 
     private fun findQueriesToReinsert(node: QueryTrieNode): List<ReinsertEntry> {
-        val compartor = SpatialOverlapCompartor(bounds)
-        val mbrQueries = node.queries.filterIsInstance<MinimalRangeQuery>().sortedWith(compartor)
+        val comparator = SpatialOverlapComparator(bounds)
+        val mbrQueries = node.queries.filterIsInstance<MinimalRangeQuery>().sortedWith(comparator)
         val nextLevelQueries = mbrQueries.takeLast(mbrQueries.size / 2)
         node.queries.removeAll(nextLevelQueries)
         return nextLevelQueries.map { ReinsertEntry(bounds.intersection(it.spatialRange), it) }
@@ -228,30 +265,6 @@ class SpatialCell(
                 (bounds.max.y >= other.y || abs(bounds.max.y - other.y) < .000001))
     }
 
-    private fun swapToInfrequent(keyword: String, query: Query): Boolean {
-        val frequentRoot = _textualIndex[keyword]
-
-        if (frequentRoot is QueryListNode) {
-            var minSize = Int.MAX_VALUE
-            var swappableKeyQuery: Pair<String?, Query>? = null
-            frequentRoot.queries.forEach {
-                val (altKeyword, currentSize) = getAlternateKeyword(it)
-                if (currentSize < minSize && currentSize < SpatioTextualConst.TRIE_SPLIT_THRESHOLD) {
-                    minSize = currentSize
-                    swappableKeyQuery = Pair(altKeyword, it)
-                }
-            }
-
-            if (swappableKeyQuery != null && swappableKeyQuery!!.first != null) {
-                insertAtKeyword(swappableKeyQuery!!.first!!, swappableKeyQuery!!.second)
-                frequentRoot.queries.remove(swappableKeyQuery!!.second)
-                frequentRoot.queries.add(query)
-                return true
-            }
-        }
-        return false
-    }
-
     override fun toString(): String {
         return "SpatialCell(bounds=$bounds, coordinate=$_coordinatePoint, level=$_level)"
     }
@@ -259,7 +272,7 @@ class SpatialCell(
 
     companion object {
         fun calcCoordinate(i: Int, x: Int, y: Int, granI: Int): Int {
-            return (i shl 22) + y * (granI + 1) + x // Modified for confilct issue below
+            return (i shl 22) + y * (granI + 1) + x // Modified for conflict issue below
             // granI = 1
             // (0, 1) = 1 * 1 + 0 -> 1
             // (1, 0) = 0 * 1 + 1 -> 1
@@ -277,7 +290,7 @@ class SpatialCell(
 
 }
 
-internal class SpatialOverlapCompartor(private var bounds: Rectangle) : Comparator<MinimalRangeQuery> {
+internal class SpatialOverlapComparator(private var bounds: Rectangle) : Comparator<MinimalRangeQuery> {
     override fun compare(e1: MinimalRangeQuery, e2: MinimalRangeQuery): Int {
         val val1 = bounds.intersection(e1.spatialRange).area
         val val2 = bounds.intersection(e2.spatialRange).area

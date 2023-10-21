@@ -41,7 +41,7 @@ class FAST(bounds: Rectangle, gridGran: Int) {
         val nextLevelQueries: ArrayList<ReinsertEntry> = ArrayList()
         index[coordinate]?.let { cell ->
             if (cell.overlapsSpatially(query.location)) {
-                nextLevelQueries.addAll(cell.addQuery(minKeyword, query))
+                nextLevelQueries.addAll(cell.addQuery(minKeyword, query).second)
             }
             if (cell.textualIndex.isNullOrEmpty()) {
                 index.remove(coordinate)
@@ -75,6 +75,7 @@ class FAST(bounds: Rectangle, gridGran: Int) {
                 if (level > context.maxInsertedLevel) context.maxInsertedLevel = level
 
                 val minKeyword = getMinKeyword(level, entry.query)
+                var sharedNodes: QueryListNode? = null
 
                 for (i: Int in minX..maxX) {
                     for (j: Int in minY..maxY) {
@@ -89,8 +90,17 @@ class FAST(bounds: Rectangle, gridGran: Int) {
 
                         index[coordinate]?.let { cell ->
                             if (cell.overlapsSpatially(entry.query.spatialRange)) {
-                                // TODO - Implement query sharing
-                                nextLevelQueries.addAll(cell.addQuery(minKeyword, entry.query))
+                                if (i == minX && j == minY) {
+                                    val (sharedPendingNodes, pendingQueries) = cell.addQuery(minKeyword, entry.query)
+                                    sharedNodes = sharedPendingNodes
+                                    nextLevelQueries.addAll(pendingQueries)
+                                } else if (sharedNodes != null) {
+                                    val pendingQueries = cell.addSharedQuery(minKeyword, entry.query, sharedNodes)
+                                    nextLevelQueries.addAll(pendingQueries)
+                                } else {
+                                    val (_, pendingQueries) = cell.addQuery(minKeyword, entry.query)
+                                    nextLevelQueries.addAll(pendingQueries)
+                                }
                             }
                             if (cell.textualIndex.isNullOrEmpty()) {
                                 index.remove(coordinate)

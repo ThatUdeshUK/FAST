@@ -64,9 +64,11 @@ class FASTTest {
             testFAST.addContinuousQuery(it)
         }
 
-
+        println("-----Search Test-----")
         objs.zip(answers).forEach { (obj, ans) ->
-            assertTrue { testFAST.searchQueries(obj).map { it.id }.containsAll(ans) }
+            val fastAns = testFAST.searchQueries(obj).map { it.id }
+            println("$fastAns | $ans")
+            assertTrue { fastAns.containsAll(ans) }
         }
     }
 }
