@@ -1,0 +1,1 @@
+Place the `places_dump_US.geojson` file here.

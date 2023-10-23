@@ -2,7 +2,9 @@ package parsers
 
 import com.google.gson.annotations.SerializedName
 import models.DataObject
+import models.MinimalRangeQuery
 import models.Point
+import models.Query
 
 data class Place(
     @SerializedName("id") private var _id: String? = null,
@@ -18,6 +20,9 @@ data class Place(
             return properties?.tags ?: emptyList()
         }
 
+    fun toQuery(qid: Int, r: Int, expireTimestamp: Int): MinimalRangeQuery {
+        return MinimalRangeQuery(qid, keywords, coordinate.toRect(r), expireTimestamp)
+    }
     fun toDataObject(oid: Int, expireTimestamp: Int): DataObject {
         return DataObject(oid, keywords, coordinate, expireTimestamp)
     }
