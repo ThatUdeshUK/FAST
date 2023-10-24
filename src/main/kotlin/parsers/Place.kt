@@ -20,8 +20,9 @@ data class Place(
             return properties?.tags ?: emptyList()
         }
 
-    fun scale(minX: Double, maxX: Double) {
-
+    fun scale(min: Point, max: Point, scaledTo: Double) {
+        geometry!!.coordinates[0] = (geometry!!.coordinates[0] - min.x) * scaledTo / (max.x - min.x)
+        geometry!!.coordinates[1] = (geometry!!.coordinates[1] - min.y) * scaledTo / (max.y - min.y)
     }
 
     fun toQuery(qid: Int, r: Int, expireTimestamp: Int): MinimalRangeQuery {

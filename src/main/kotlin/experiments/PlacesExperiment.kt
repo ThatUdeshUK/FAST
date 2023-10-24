@@ -22,6 +22,8 @@ class PlacesExperiment(
     private val places: MutableList<Place> = mutableListOf()
     private var minX: Double = Double.MAX_VALUE
     private var maxX: Double = -Double.MAX_VALUE
+    private var minY: Double = Double.MAX_VALUE
+    private var maxY: Double = -Double.MAX_VALUE
 
     private fun loadData() {
         val file = File(inputPath)
@@ -34,13 +36,16 @@ class PlacesExperiment(
                 if (place.keywords.isNotEmpty()) {
                     if (place.coordinate.x < minX) minX = place.coordinate.x
                     if (place.coordinate.x > maxX) maxX = place.coordinate.x
+                    if (place.coordinate.y < minY) minY = place.coordinate.y
+                    if (place.coordinate.y > maxY) maxY = place.coordinate.y
+
                     places.add(place)
                 }
             }
         }
         println("Done! Time=$fileReadTime")
-        println("Min x: $minX")
-        println("Max x: $maxX")
+
+        places.forEach { it.scale(Point(minX, minY), Point(maxX, maxY), SpatioTextualConst.MAX_RANGE_X) }
 
         print("Shuffling -> ")
         val shuffleTime = measureTime {
@@ -50,8 +55,7 @@ class PlacesExperiment(
     }
 
     override fun generateQueries(): List<Query> {
-        val spatialRange = maxX - minX
-        val r = (spatialRange * srRate).toInt()
+        val r = (SpatioTextualConst.MAX_RANGE_X * srRate).toInt()
         return places.subList(0, numQueries).mapIndexed { index, place ->
             place.toQuery(index, r, numQueries + numObjects + 1)
         }
@@ -66,10 +70,12 @@ class PlacesExperiment(
     override fun run() {
         loadData()
         createAndSearch()
-        save(mapOf(
-            Pair("num_queries", numQueries.toString()),
-            Pair("num_objects", numObjects.toString()),
-            Pair("sr_rate", srRate.toString())
-        ))
+        save(
+            mapOf(
+                Pair("num_queries", numQueries.toString()),
+                Pair("num_objects", numObjects.toString()),
+                Pair("sr_rate", srRate.toString())
+            )
+        )
     }
 }
