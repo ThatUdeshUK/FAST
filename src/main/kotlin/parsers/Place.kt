@@ -20,9 +20,14 @@ data class Place(
             return properties?.tags ?: emptyList()
         }
 
+    fun scale(minX: Double, maxX: Double) {
+
+    }
+
     fun toQuery(qid: Int, r: Int, expireTimestamp: Int): MinimalRangeQuery {
         return MinimalRangeQuery(qid, keywords, coordinate.toRect(r), expireTimestamp)
     }
+
     fun toDataObject(oid: Int, expireTimestamp: Int): DataObject {
         return DataObject(oid, keywords, coordinate, expireTimestamp)
     }

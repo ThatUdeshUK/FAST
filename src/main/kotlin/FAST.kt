@@ -8,7 +8,7 @@ import kotlin.math.pow
 /**
  * FAST spatial-keyword index.
  */
-class FAST(bounds: Rectangle, gridGran: Int) {
+class FAST(val bounds: Rectangle, val gridGran: Int) {
     private val context: Context = Context(bounds, gridGran, log(gridGran.toDouble(), 2.0).toInt())
     private val index: ConcurrentHashMap<Int, SpatialCell> = ConcurrentHashMap()
 

@@ -44,3 +44,4 @@ bin/
 
 ### Data ###
 data/*.geojson
+data/*.zip
